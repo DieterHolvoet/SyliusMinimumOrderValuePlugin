@@ -35,7 +35,11 @@ final class NedacSyliusMinimumOrderValueExtension extends Extension
                 new Reference('sylius.context.cart'),
                 new Reference('sylius.router.checkout_state'),
                 new Definition(RequestMatcher::class, [$config['pattern']]),
-                new Reference('sm.factory'),
+                new Reference(
+                    interface_exists('Sylius\\Abstraction\\StateMachine\\StateMachineInterface')
+                        ? 'sylius_abstraction.state_machine'
+                        : 'sm.factory'
+                ),
             ]
         );
         $checkoutResolverDefinition->addTag('kernel.event_subscriber');

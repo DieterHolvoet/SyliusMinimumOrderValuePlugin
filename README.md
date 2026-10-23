@@ -78,9 +78,13 @@ Please see the official Sylius docs on how to configure the checkout resolver, s
 ##### Supported Sylius versions:
 <table>
     <tr><td>1.10</td></tr>
+    <tr><td>1.14</td></tr>
 </table>
 
-> **_NOTE:_** *This plugin requires PHP 7.4 or up*
+> **_NOTE:_** *This plugin requires PHP 7.4 or up. Sylius 1.14 requires PHP 8.1 or up.*
+
+The development Docker setup defaults to Sylius 1.14. To run it against Sylius 1.10 instead, set
+`PHP_VERSION=8.0`, `NODE_VERSION=13`, and `SYLIUS_VERSION=1.10` when building the containers.
 
 #### Installation:
 1. Install using composer:

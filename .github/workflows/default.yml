@@ -9,6 +9,19 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - php_version: '8.0'
+            node_version: '13'
+            sylius_version: '1.10'
+          - php_version: '8.1'
+            node_version: '20'
+            sylius_version: '1.14'
+    env:
+      PHP_VERSION: ${{ matrix.php_version }}
+      NODE_VERSION: ${{ matrix.node_version }}
+      SYLIUS_VERSION: ${{ matrix.sylius_version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -21,6 +34,7 @@ jobs:
       - name: Build and start containers
         run: docker-compose up -d --build
       - name: Push container images
+        if: matrix.sylius_version == '1.14'
         run: |
           docker-compose push php && \
           docker-compose push nginx && \

@@ -21,13 +21,13 @@ final class CheckoutResolver implements EventSubscriberInterface
     private CartContextInterface $cartContext;
     private CheckoutStateUrlGeneratorInterface $urlGenerator;
     private RequestMatcherInterface $requestMatcher;
-    private FactoryInterface $stateMachineFactory;
+    private object $stateMachineFactory;
 
     public function __construct(
         CartContextInterface $cartContext,
         CheckoutStateUrlGeneratorInterface $urlGenerator,
         RequestMatcherInterface $requestMatcher,
-        FactoryInterface $stateMachineFactory
+        object $stateMachineFactory
     ) {
         $this->cartContext = $cartContext;
         $this->urlGenerator = $urlGenerator;
@@ -37,7 +37,7 @@ final class CheckoutResolver implements EventSubscriberInterface
 
     public function onKernelRequest(RequestEvent $event): void
     {
-        if (!$event->isMasterRequest()) {
+        if (!$event->isMainRequest()) {
             return;
         }
 
@@ -51,12 +51,16 @@ final class CheckoutResolver implements EventSubscriberInterface
         $order = $this->cartContext->getCart();
         if ($order->isEmpty()) {
             $event->setResponse(new RedirectResponse($this->urlGenerator->generateForCart()));
+            return;
         }
 
+        $graph = $this->getRequestedGraph($request);
         $transition = $this->getRequestedTransition($request);
+        if (null === $graph || null === $transition) {
+            return;
+        }
 
-        $stateMachine = $this->stateMachineFactory->get($order, $this->getRequestedGraph($request));
-        if ($stateMachine->can($transition)) {
+        if ($this->canTransition($order, $graph, $transition)) {
             return;
         }
 
@@ -78,13 +82,27 @@ final class CheckoutResolver implements EventSubscriberInterface
         ];
     }
 
-    private function getRequestedGraph(Request $request): string
+    private function getRequestedGraph(Request $request): ?string
     {
-        return $request->attributes->get('_sylius')['state_machine']['graph'];
+        return $request->attributes->get('_sylius', [])['state_machine']['graph'] ?? null;
     }
 
-    private function getRequestedTransition(Request $request): string
+    private function getRequestedTransition(Request $request): ?string
     {
-        return $request->attributes->get('_sylius')['state_machine']['transition'];
+        return $request->attributes->get('_sylius', [])['state_machine']['transition'] ?? null;
+    }
+
+    private function canTransition(OrderInterface $order, string $graph, string $transition): bool
+    {
+        if ($this->stateMachineFactory instanceof FactoryInterface) {
+            return $this->stateMachineFactory->get($order, $graph)->can($transition);
+        }
+
+        // Sylius 1.14 injects its state machine abstraction instead of the Winzou factory.
+        if (!is_callable([$this->stateMachineFactory, 'can'])) {
+            throw new \LogicException('The configured state machine does not support transition checks.');
+        }
+
+        return (bool) call_user_func([$this->stateMachineFactory, 'can'], $order, $graph, $transition);
     }
 }

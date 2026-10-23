@@ -6,6 +6,9 @@ services:
       context: .
       target: sylius_minimum_order_value_plugin_php
       network: host
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.1}
+        SYLIUS_VERSION: ${SYLIUS_VERSION:-1.14}
     image: ghcr.io/nedac-sorbo/sylius_minimum_order_value_plugin_php:latest
     environment:
       - APP_ENV=test
@@ -31,6 +34,10 @@ services:
       context: .
       target: sylius_minimum_order_value_plugin_nginx
       network: host
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.1}
+        NODE_VERSION: ${NODE_VERSION:-20}
+        SYLIUS_VERSION: ${SYLIUS_VERSION:-1.14}
     image: ghcr.io/nedac-sorbo/sylius_minimum_order_value_plugin_nginx:latest
     volumes:
       - public:/srv/sylius/public:ro
@@ -42,6 +49,10 @@ services:
       context: .
       target: sylius_minimum_order_value_plugin_nodejs
       network: host
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.1}
+        NODE_VERSION: ${NODE_VERSION:-20}
+        SYLIUS_VERSION: ${SYLIUS_VERSION:-1.14}
     image: ghcr.io/nedac-sorbo/sylius_minimum_order_value_plugin_nodejs:latest
     volumes:
       - .:/srv/sylius/vendor/nedac/sylius-minimum-order-value-plugin

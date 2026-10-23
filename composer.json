@@ -6,7 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^7.4 || ^8.0",
-        "sylius/sylius": ">=1.10.2 <1.11.0"
+        "sylius/sylius": ">=1.10.2 <1.11.0 || ^1.14"
     },
     "require-dev": {
         "behat/behat": "^3.8",
@@ -34,7 +34,7 @@
     },
     "extra": {
         "symfony": {
-            "require": "5.3.*"
+            "require": "^5.4 || ^6.4"
         }
     }
 }

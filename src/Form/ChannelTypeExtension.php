@@ -42,6 +42,7 @@ final class ChannelTypeExtension extends AbstractTypeExtension
             $form->add('minimumOrderValue', MoneyType::class, $options);
         };
 
+        // Sylius 1.14 adds baseCurrency via a PRE_SET_DATA subscriber.
         $builder->addEventListener(
             FormEvents::PRE_SET_DATA,
             function (FormEvent $event) use ($formModifier): void {
@@ -49,12 +50,7 @@ final class ChannelTypeExtension extends AbstractTypeExtension
 
                 $baseCurrencyForm =  $form->get('baseCurrency');
                 $config = $baseCurrencyForm->getConfig();
-                $attributes = $config->getAttributes();
-
-                $disabled = true;
-                if (isset($attributes['data_collector/passed_options']['disabled'])) {
-                    $disabled = $attributes['data_collector/passed_options']['disabled'];
-                }
+                $disabled = $config->getOption('disabled');
 
                 $form->remove('baseCurrency');
 
@@ -89,7 +85,8 @@ final class ChannelTypeExtension extends AbstractTypeExtension
                 if (null !== $baseCurrency) {
                     $formModifier($form, $baseCurrency->getCode(), $channel->getMinimumOrderValue());
                 }
-            }
+            },
+            -100
         );
     }
 

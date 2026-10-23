@@ -1,5 +1,5 @@
-ARG PHP_VERSION=8.0
-ARG NODE_VERSION=13
+ARG PHP_VERSION=8.1
+ARG NODE_VERSION=20
 ARG NGINX_VERSION=1.21
 
 ##################################################
@@ -24,7 +24,7 @@ RUN apk add --no-cache \
                 py3-pip \
         ;
 
-ARG XDEBUG_VERSION=3.0.4
+ARG XDEBUG_VERSION=3.2.2
 
 RUN set -eux; \
         apk add --no-cache --virtual .build-deps \
@@ -93,7 +93,7 @@ RUN chmod +x /usr/local/bin/docker-entrypoint
 
 WORKDIR /srv
 
-ARG SYLIUS_VERSION=1.10
+ARG SYLIUS_VERSION=1.14
 
 # TODO: Install using composer
 RUN git clone --depth 1 --single-branch --branch "$SYLIUS_VERSION" https://github.com/Sylius/Sylius-Standard.git sylius
@@ -136,6 +136,8 @@ CMD ["php-fpm"]
 ##################################################
 FROM node:${NODE_VERSION}-alpine AS sylius_minimum_order_value_plugin_nodejs
 
+ARG NODE_VERSION
+
 WORKDIR /srv/sylius
 
 RUN set -eux; \
@@ -144,8 +146,11 @@ RUN set -eux; \
                 gcc \
                 git \
                 make \
-                python2 \
         ;
+RUN case "$NODE_VERSION" in \
+        20*) apk add --no-cache python3 ;; \
+        *) apk add --no-cache python2 ;; \
+    esac
 
 COPY --from=sylius_minimum_order_value_plugin_php /srv/sylius/package.json ./package.json
 COPY --from=sylius_minimum_order_value_plugin_php /srv/sylius/gulpfile.babel.js ./gulpfile.babel.js
